@@ -72,6 +72,8 @@ func (cc *ClientConnection) Run(ctx context.Context) {
 	if err = cc.processMsg(ctx); err != nil {
 		msg = "fails to relay the connection"
 		goto clean
+	} else {
+		cc.logger.Info("read message", zap.String("caddr", cc.connMgr.ClientAddr()), zap.String("saddr", cc.connMgr.ServerAddr()))
 	}
 
 clean:
