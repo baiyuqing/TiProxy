@@ -15,27 +15,27 @@
 package backend
 
 import (
-    "context"
-    "crypto/tls"
-    "encoding/binary"
-    "encoding/json"
-    "fmt"
-    "net"
-    "strings"
-    "sync"
-    "sync/atomic"
-    "time"
-    "unsafe"
+	"context"
+	"crypto/tls"
+	"encoding/binary"
+	"encoding/json"
+	"fmt"
+	"net"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
+	"unsafe"
 
-    "github.com/cenkalti/backoff/v4"
-    gomysql "github.com/go-mysql-org/go-mysql/mysql"
-    "github.com/pingcap/TiProxy/lib/util/errors"
-    "github.com/pingcap/TiProxy/lib/util/waitgroup"
-    "github.com/pingcap/TiProxy/pkg/manager/router"
-    pnet "github.com/pingcap/TiProxy/pkg/proxy/net"
-    "github.com/pingcap/tidb/parser/mysql"
-    "github.com/siddontang/go/hack"
-    "go.uber.org/zap"
+	"github.com/cenkalti/backoff/v4"
+	gomysql "github.com/go-mysql-org/go-mysql/mysql"
+	"github.com/pingcap/TiProxy/lib/util/errors"
+	"github.com/pingcap/TiProxy/lib/util/waitgroup"
+	"github.com/pingcap/TiProxy/pkg/manager/router"
+	pnet "github.com/pingcap/TiProxy/pkg/proxy/net"
+	"github.com/pingcap/tidb/parser/mysql"
+	"github.com/siddontang/go/hack"
+	"go.uber.org/zap"
 )
 
 var (
@@ -272,6 +272,7 @@ func (mgr *BackendConnManager) getBackendIO(
 // If it finds that the session is ready for redirection, it migrates the session.
 func (mgr *BackendConnManager) ExecuteCmd(ctx context.Context, request []byte) error {
     if len(request) < 1 {
+        mgr.logger.Info("debug 1 ", zap.String("message", "requests less than 1"))
         return mysql.ErrMalformPacket
     }
     cmd := request[0]
@@ -281,6 +282,7 @@ func (mgr *BackendConnManager) ExecuteCmd(ctx context.Context, request []byte) e
 
     switch mgr.closeStatus.Load() {
     case statusClosing, statusClosed:
+        mgr.logger.Info("debug 2 ", zap.String("message", "closeStatus is closing or closed"))
         return nil
     }
     defer mgr.resetCheckBackendTicker()
@@ -293,7 +295,7 @@ func (mgr *BackendConnManager) ExecuteCmd(ctx context.Context, request []byte) e
         if !IsMySQLError(err) {
             return err
         } else {
-            mgr.logger.Debug("got a mysql error", zap.Error(err))
+            mgr.logger.Info("got a mysql error", zap.Error(err))
         }
     }
     if err == nil {
